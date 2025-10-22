@@ -11,7 +11,7 @@
 
 ---
 
-## 1. เตรียมเครื่องก่อนแจก GitHub
+## 1. เตรียมเครื่อง
 
 1. **ติดตั้ง Python 3.9+**  
    macOS Ventura/Sequoia มี `python3` อยู่แล้ว (ตรวจสอบด้วย `python3 --version`).  
@@ -22,7 +22,7 @@
    sudo apt install ffmpeg        # Ubuntu/Debian
    choco install ffmpeg           # Windows + Chocolatey
    ```
-3. **โครงสร้างโฟลเดอร์ (เสนอแนะสำหรับ GitHub)**  
+3. **โครงสร้างโฟลเดอร์ **  
    ```
    convertor/
    ├── auto_convert.py
@@ -33,7 +33,6 @@
        └── com.alphab.autoconvert.plist
    ```
 
-> ถ้า push ขึ้น GitHub ให้ commit ทุกไฟล์ตามโครงสร้างข้างต้น
 
 ---
 
