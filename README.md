@@ -1,6 +1,6 @@
 # Auto Converter Watcher
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![English Version](https://img.shields.io/badge/Docs-English-blue)](README_EN.md)
 
 โครงการนี้ทำหน้าที่เฝ้าโฟลเดอร์สำหรับไฟล์ใหม่/แก้ไข แล้วแปลงไฟล์ที่รองรับโดยอัตโนมัติ:
 
@@ -148,5 +148,4 @@ rm ~/Library/LaunchAgents/com.alphab.autoconvert.plist                  # ลบ
 - หากเปลี่ยนรายการนามสกุลหรือโฟลเดอร์ผลลัพธ์ อย่าลืมอัปเดตคู่มือและ plist ให้ตรงกัน
 
 ---
-
 
