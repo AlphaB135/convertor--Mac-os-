@@ -1,0 +1,18 @@
+# Virtual environments
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# macOS
+.DS_Store
+
+# Logs and outputs
+input/
+output/
+*.log
+*.err
+
+# Launchd copied plist
+Library/LaunchAgents/com.alphab.autoconvert.plist

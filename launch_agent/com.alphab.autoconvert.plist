@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.alphab.autoconvert</string>
+
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Users/alphab/convertor/.venv/bin/python</string>
+		<string>/Users/alphab/convertor/auto_convert.py</string>
+	</array>
+
+	<key>WorkingDirectory</key>
+	<string>/Users/alphab/convertor</string>
+
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/Users/alphab/convertor/.venv/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+	</dict>
+
+	<key>RunAtLoad</key>
+	<true/>
+
+	<key>KeepAlive</key>
+	<true/>
+
+	<key>StandardOutPath</key>
+	<string>/Users/alphab/Library/Logs/com.alphab.autoconvert.log</string>
+
+	<key>StandardErrorPath</key>
+	<string>/Users/alphab/Library/Logs/com.alphab.autoconvert.err</string>
+</dict>
+</plist>
