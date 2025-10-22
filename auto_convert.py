@@ -96,10 +96,16 @@ def parse_args() -> argparse.Namespace:
         help="Path to ffmpeg binary (default assumes it is on PATH).",
     )
     parser.add_argument(
-        "--audio-bitrate",
+        "--video-crf",
         type=str,
-        default="192k",
-        help="Target bitrate for MP3 files (passed to ffmpeg -b:a).",
+        default="23",
+        help="Constant rate factor for x264 encoding (lower is higher quality).",
+    )
+    parser.add_argument(
+        "--video-preset",
+        type=str,
+        default="medium",
+        help="x264 preset controlling encode speed vs quality (e.g., veryfast, faster, medium).",
     )
     return parser.parse_args()
 
@@ -177,10 +183,10 @@ def convert_image_to_png(src: Path, dest_dir: Path) -> None:
     logging.info("Converted image to PNG: %s -> %s", src.name, output_path.name)
 
 
-def convert_video_to_mp3(src: Path, dest_dir: Path, ffmpeg_bin: str, audio_bitrate: str) -> None:
-    output_path = dest_dir / (src.stem + ".mp3")
+def convert_video_to_mp4(src: Path, dest_dir: Path, ffmpeg_bin: str, video_crf: str, video_preset: str) -> None:
+    output_path = dest_dir / (src.stem + ".mp4")
     if output_path.exists():
-        logging.info("Audio output already exists, skipping: %s", output_path)
+        logging.info("Video output already exists, skipping: %s", output_path)
         return
 
     cmd = [
@@ -188,11 +194,16 @@ def convert_video_to_mp3(src: Path, dest_dir: Path, ffmpeg_bin: str, audio_bitra
         "-y",
         "-i",
         str(src),
-        "-vn",
-        "-acodec",
-        "libmp3lame",
+        "-c:v",
+        "libx264",
+        "-preset",
+        video_preset,
+        "-crf",
+        video_crf,
+        "-c:a",
+        "aac",
         "-b:a",
-        audio_bitrate,
+        "192k",
         str(output_path),
     ]
 
@@ -209,7 +220,7 @@ def convert_video_to_mp3(src: Path, dest_dir: Path, ffmpeg_bin: str, audio_bitra
         logging.error("ffmpeg binary not found. Set --ffmpeg-bin or install ffmpeg.")
         return
 
-    logging.info("Converted video to MP3: %s -> %s", src.name, output_path.name)
+    logging.info("Converted video to MP4: %s -> %s", src.name, output_path.name)
     if result.stderr:
         logging.debug("ffmpeg output: %s", result.stderr.strip())
 
@@ -221,15 +232,16 @@ class ConversionConfig:
     image_exts: Set[str]
     video_exts: Set[str]
     ffmpeg_bin: str
-    audio_bitrate: str
+    video_crf: str
+    video_preset: str
 
     @property
     def image_output_dir(self) -> Path:
         return self.output_dir / "images"
 
     @property
-    def audio_output_dir(self) -> Path:
-        return self.output_dir / "audio"
+    def video_output_dir(self) -> Path:
+        return self.output_dir / "videos"
 
 
 class ConversionHandler(FileSystemEventHandler):
@@ -279,12 +291,13 @@ class ConversionHandler(FileSystemEventHandler):
                 ensure_directory(self.config.image_output_dir)
                 convert_image_to_png(path, self.config.image_output_dir)
             elif suffix in self.config.video_exts:
-                ensure_directory(self.config.audio_output_dir)
-                convert_video_to_mp3(
+                ensure_directory(self.config.video_output_dir)
+                convert_video_to_mp4(
                     path,
-                    self.config.audio_output_dir,
+                    self.config.video_output_dir,
                     self.config.ffmpeg_bin,
-                    self.config.audio_bitrate,
+                    self.config.video_crf,
+                    self.config.video_preset,
                 )
             else:
                 logging.debug("No converter registered for %s", path)
@@ -314,8 +327,14 @@ def process_existing_files(config: ConversionConfig) -> None:
                     ensure_directory(config.image_output_dir)
                     convert_image_to_png(path, config.image_output_dir)
                 else:
-                    ensure_directory(config.audio_output_dir)
-                    convert_video_to_mp3(path, config.audio_output_dir, config.ffmpeg_bin, config.audio_bitrate)
+                    ensure_directory(config.video_output_dir)
+                    convert_video_to_mp4(
+                        path,
+                        config.video_output_dir,
+                        config.ffmpeg_bin,
+                        config.video_crf,
+                        config.video_preset,
+                    )
 
 
 def main() -> int:
@@ -329,7 +348,8 @@ def main() -> int:
         image_exts=normalise_extensions(args.image_ext) if args.image_ext is not None else set(IMAGE_EXTENSIONS),
         video_exts=normalise_extensions(args.video_ext) if args.video_ext is not None else set(VIDEO_EXTENSIONS),
         ffmpeg_bin=args.ffmpeg_bin,
-        audio_bitrate=args.audio_bitrate,
+        video_crf=args.video_crf,
+        video_preset=args.video_preset,
     )
 
     ensure_directory(config.input_dir)
@@ -344,7 +364,7 @@ def main() -> int:
 
     logging.info("Watching %s", config.input_dir)
     logging.info("Converted images -> %s", config.image_output_dir)
-    logging.info("Converted audio -> %s", config.audio_output_dir)
+    logging.info("Converted videos -> %s", config.video_output_dir)
 
     try:
         observer.start()

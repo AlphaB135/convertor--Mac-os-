@@ -5,9 +5,9 @@
 โครงการนี้ทำหน้าที่เฝ้าโฟลเดอร์สำหรับไฟล์ใหม่/แก้ไข แล้วแปลงไฟล์ที่รองรับโดยอัตโนมัติ:
 
 - รูปภาพ (`.jpg`, `.jpeg`, `.bmp`, `.gif`, `.tif`, `.tiff`, `.webp`, `.heic`, `.heif`) ➜ PNG
-- วิดีโอ (`.mp4`, `.mov`, `.mkv`, `.avi`, `.m4v`, `.wmv`, `.flv`, `.webm`) ➜ MP3 (ดึงเสียงออกมาเท่านั้น)
+- วิดีโอ (`.mp4`, `.mov`, `.mkv`, `.avi`, `.m4v`, `.wmv`, `.flv`, `.webm`) ➜ MP4 (บีบอัดด้วย x264 + AAC)
 
-ผลลัพธ์จะถูกส่งเข้า `output/images` และ `output/audio` โดยไม่แตะไฟล์ต้นฉบับ
+ผลลัพธ์จะถูกส่งเข้า `output/images` และ `output/videos` โดยไม่แตะไฟล์ต้นฉบับ
 
 ---
 
@@ -69,12 +69,15 @@ python3 auto_convert.py
 python3 auto_convert.py \
   --input-dir /path/to/watch \
   --output-dir /path/to/store/results \
-  --audio-bitrate 256k \
+  --video-crf 20 \
+  --video-preset veryfast \
   --ffmpeg-bin /usr/local/bin/ffmpeg
 ```
 
 - `--no-process-existing` ข้ามไฟล์ที่อยู่ก่อนเริ่มสคริปต์
 - `--image-ext` `--video-ext` ระบุชุดนามสกุลไฟล์เอง (ใส่จุดนำหน้า เช่น `.jpg .png`)
+- `--video-crf` ค่า CRF สำหรับ x264 (เลขต่ำ = คุณภาพสูง = ไฟล์ใหญ่)
+- `--video-preset` ควบคุมความเร็ว/คุณภาพของ x264 (`ultrafast` ถึง `placebo`)
 
 ---
 
@@ -123,7 +126,7 @@ rm ~/Library/LaunchAgents/com.alphab.autoconvert.plist                  # ลบ
 - ใช้ `watchdog` สังเกตไฟล์ใหม่/แก้ไขในโฟลเดอร์
 - รอให้ไฟล์คงที่ (ไม่มีการเปลี่ยนขนาด) ก่อนเริ่มแปลง เพื่อหลีกเลี่ยงไฟล์ค้าง
 - แปลงภาพด้วย `Pillow` และปลั๊กอิน `pillow-heif` เพื่อรองรับ HEIC/HEIF
-- แปลงวิดีโอเป็น MP3 ด้วย `ffmpeg` (ตัวเลือก `libmp3lame`)
+- แปลงวิดีโอเป็น MP4 ด้วย `ffmpeg` (`libx264` + `aac`)
 - เก็บ log ที่ stdout/stdout หรือไฟล์ log ใน `~/Library/Logs/` เมื่อใช้ launch agent
 
 ---
@@ -134,9 +137,11 @@ rm ~/Library/LaunchAgents/com.alphab.autoconvert.plist                  # ลบ
   ตรวจว่าไฟล์ถูกคัดลอกสมบูรณ์ (`auto_convert.py` รอจนไฟล์นิ่ง) และนามสกุลอยู่ในรายการรองรับ
 - **ไฟล์ HEIC ไม่แปลง**  
   ยืนยันว่า `pillow-heif` ติดตั้งอยู่ใน virtualenv (`pip show pillow-heif`)
+- **วีดีโอยังเป็นไฟล์เดิม ไม่ได้แปลงเป็น MP4**  
+  ตรวจ log เพื่อดูคำสั่ง ffmpeg, ตรวจว่ามี `ffmpeg` บน PATH และดูว่ามี error เรื่อง codec หรือสิทธิ์เขียนไฟล์
 - **launch agent ไม่รันตอนบูต**  
   ตรวจคำสั่ง `launchctl list | grep autoconvert` และสิทธิ์ Full Disk Access ให้ Terminal/launchctl
-- **ต้องการให้ใช้ ffmpeg เวอร์ชันอื่น**  
+- **ต้องการ ffmpeg เวอร์ชันอื่น**  
   แก้ไข `launch_agent/com.alphab.autoconvert.plist` ส่วน `EnvironmentVariables` หรือสั่ง `--ffmpeg-bin` ตอนรัน manual
 
 ---
@@ -148,4 +153,3 @@ rm ~/Library/LaunchAgents/com.alphab.autoconvert.plist                  # ลบ
 - หากเปลี่ยนรายการนามสกุลหรือโฟลเดอร์ผลลัพธ์ อย่าลืมอัปเดตคู่มือและ plist ให้ตรงกัน
 
 ---
-

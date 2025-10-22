@@ -5,9 +5,9 @@
 This project watches a directory for new or modified files and converts them automatically:
 
 - Images (`.jpg`, `.jpeg`, `.bmp`, `.gif`, `.tif`, `.tiff`, `.webp`, `.heic`, `.heif`) ➜ PNG
-- Videos (`.mp4`, `.mov`, `.mkv`, `.avi`, `.m4v`, `.wmv`, `.flv`, `.webm`) ➜ MP3 (audio-only)
+- Videos (`.mp4`, `.mov`, `.mkv`, `.avi`, `.m4v`, `.wmv`, `.flv`, `.webm`) ➜ MP4 (x264 + AAC)
 
-Converted files are stored in `output/images` and `output/audio`, leaving the originals untouched.
+Converted files are stored in `output/images` and `output/videos`, leaving the originals untouched.
 
 ---
 
@@ -71,12 +71,15 @@ python3 auto_convert.py
 python3 auto_convert.py \
   --input-dir /path/to/watch \
   --output-dir /path/to/results \
-  --audio-bitrate 256k \
+  --video-crf 20 \
+  --video-preset veryfast \
   --ffmpeg-bin /usr/local/bin/ffmpeg
 ```
 
 - `--no-process-existing`: skip files that already existed before startup.
-- `--image-ext` and `--video-ext`: override supported extensions (include the dot, e.g., `.jpg .png`).
+- `--image-ext` / `--video-ext`: override supported extensions (include the dot, e.g., `.jpg .png`).
+- `--video-crf`: x264 CRF value (lower = better quality, larger file).
+- `--video-preset`: x264 speed/quality preset (`ultrafast` … `placebo`).
 
 ---
 
@@ -125,7 +128,7 @@ rm ~/Library/LaunchAgents/com.alphab.autoconvert.plist                 # remove 
 - `watchdog` monitors the filesystem for new/modified files.
 - A stabilization loop waits for file copies to finish before conversion.
 - Image conversions use `Pillow` plus `pillow-heif` for HEIC/HEIF support.
-- Video-to-audio conversion uses `ffmpeg` (`libmp3lame` codec). Errors are logged.
+- Videos are transcoded to MP4 with `ffmpeg` (`libx264` + `aac`). Errors are logged.
 - Logs are printed to stdout/stderr when run manually, and to `~/Library/Logs/` via launch agent.
 
 ---
@@ -136,6 +139,7 @@ rm ~/Library/LaunchAgents/com.alphab.autoconvert.plist                 # remove 
 |-------|-----|
 | No output files appear | Ensure the file finished copying and uses a supported extension. |
 | HEIC files stay unconverted | Confirm `pillow-heif` is installed in the virtualenv (`pip show pillow-heif`). |
+| Video output is missing / still original format | Inspect the log for ffmpeg errors, verify `ffmpeg` is on PATH, and check write permissions in `output/videos`. |
 | Launch agent doesn't start at login | Check `launchctl list`, log files, and macOS Full Disk Access permissions. |
 | Need a different `ffmpeg` binary | Edit the plist `EnvironmentVariables` or pass `--ffmpeg-bin` when running manually. |
 
